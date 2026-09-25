@@ -1,0 +1,23 @@
+{
+	"id": "tidy5e-formula-simplifier",
+	"title": "Tidy 5e Formula Simplifier",
+	"description": "Simplifies informational damage formulas on Tidy 5e item sheets and actor inventories.",
+	"version": "autoreplaced",
+	"manifest": "autoreplaced",
+	"download": "autoreplaced",
+	"authors": [{ "name": "Mad Wizard", "discord": "mad.wizard" }],
+	"compatibility": {
+		"minimum": "14",
+		"verified": "14"
+	},
+	"relationships": {
+		"systems": [
+			{
+				"id": "dnd5e",
+				"compatibility": { "minimum": "6.0.0", "maximum": "6.0.x" }
+			}
+		],
+		"requires": [{ "id": "tidy5e-sheet", "type": "module", "compatibility": { "minimum": "14.1.2" } }]
+	},
+	"esmodules": ["module.mjs"]
+}
