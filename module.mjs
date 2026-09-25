@@ -15,29 +15,28 @@ Hooks.on("tidy5e-sheet.prepareSheetContext", (document, app, context) => {
   context.labels = { ...context.labels, damages: simplifyDamageLabels(damages) };
 });
 
-Hooks.once("tidy5e-sheet.ready", api => {
-  tidyApi = api;
-
-  const cell = CONFIG.TIDY5E?.features?.columns?.inventory?.formula?.cell;
+function patchFormulaCell(cell, name, applies = () => true) {
   if ( typeof cell?.props !== "function" ) {
-    console.warn(`${MODULE_ID}: Tidy inventory Formula column was not found`);
+    console.warn(`${MODULE_ID}: Tidy ${name} Formula column was not found`);
     return;
   }
 
   const originalProps = cell.props;
-  cell.props = args => {
-    const props = originalProps(args);
-    const item = props?.rowDocument;
-    const damages = item?.labels?.damages;
+  cell.props = function(args) {
+    const props = originalProps.call(this, args);
+    if ( !applies(args) ) return props;
+    const document = props?.rowDocument;
+    const damages = document?.labels?.damages;
     if ( !Array.isArray(damages) || !damages.length ) return props;
 
     const simplified = simplifyDamageLabels(damages);
     if ( simplified.every((damage, index) => damage === damages[index]) ) return props;
 
     // The stock Tidy Svelte cell still renders its icons, overflow count, and tooltip.
-    // Only its view of this item's prepared labels is different.
-    const labels = { ...item.labels, damages: simplified };
-    const rowDocument = new Proxy(item, {
+    // Only its view of this item's or activity's prepared labels is different.
+    const labels = { ...document.labels, damages: simplified };
+    if ( labels.damage === damages ) labels.damage = simplified;
+    const rowDocument = new Proxy(document, {
       get(target, property) {
         if ( property === "labels" ) return labels;
         const value = Reflect.get(target, property, target);
@@ -46,4 +45,12 @@ Hooks.once("tidy5e-sheet.ready", api => {
     });
     return { ...props, rowDocument };
   };
+}
+
+Hooks.once("tidy5e-sheet.ready", api => {
+  tidyApi = api;
+  const columns = CONFIG.TIDY5E?.features?.columns;
+  patchFormulaCell(columns?.inventory?.formula?.cell, "inventory");
+  patchFormulaCell(columns?.activity?.formulas?.cell, "activity", args =>
+    args.sheetDocument?.documentName === "Item" && tidyApi.isTidy5eItemSheet(args.sheetContext?.sheet));
 });

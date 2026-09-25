@@ -1,7 +1,7 @@
 {
 	"id": "tidy5e-formula-simplifier",
 	"title": "Tidy 5e Formula Simplifier",
-	"description": "Simplifies informational damage formulas on Tidy 5e item sheets and actor inventories.",
+	"description": "Simplifies informational damage formulas on Tidy 5e item sheets, item activities, and actor inventories.",
 	"version": "autoreplaced",
 	"manifest": "autoreplaced",
 	"download": "autoreplaced",
