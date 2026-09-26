@@ -15,7 +15,7 @@ Hooks.on("tidy5e-sheet.prepareSheetContext", (document, app, context) => {
   context.labels = { ...context.labels, damages: simplifyDamageLabels(damages) };
 });
 
-function patchFormulaCell(cell, name, applies = () => true) {
+function patchFormulaCell(cell, name) {
   if ( typeof cell?.props !== "function" ) {
     console.warn(`${MODULE_ID}: Tidy ${name} Formula column was not found`);
     return;
@@ -24,7 +24,6 @@ function patchFormulaCell(cell, name, applies = () => true) {
   const originalProps = cell.props;
   cell.props = function(args) {
     const props = originalProps.call(this, args);
-    if ( !applies(args) ) return props;
     const document = props?.rowDocument;
     const damages = document?.labels?.damages;
     if ( !Array.isArray(damages) || !damages.length ) return props;
@@ -51,6 +50,5 @@ Hooks.once("tidy5e-sheet.ready", api => {
   tidyApi = api;
   const columns = CONFIG.TIDY5E?.features?.columns;
   patchFormulaCell(columns?.inventory?.formula?.cell, "inventory");
-  patchFormulaCell(columns?.activity?.formulas?.cell, "activity", args =>
-    args.sheetDocument?.documentName === "Item" && tidyApi.isTidy5eItemSheet(args.sheetContext?.sheet));
+  patchFormulaCell(columns?.activity?.formulas?.cell, "activity");
 });
